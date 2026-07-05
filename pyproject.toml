@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dazzle-loglib"
+description = "Channel/verbosity-aware CLI output management on dazzle-lib continua (OutputManager, VERBOSITY_CONTINUUM, channels, hints, trace)"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "dazzle-lib>=0.8.0",
+]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "dazzle_loglib._version.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["dazzle_loglib*"]
