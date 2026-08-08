@@ -10,7 +10,8 @@ dazzle-loglib is the diagnostic-output member of the DazzleLib **perpendicular t
 |---|---|---|
 | 0 | Extraction from the vendored `log_lib` lineage (PSS → ghtraf → wtf-restarted → wtf-windows → dazzlecmd, + the continuum redesign) | Done (0.1.0-alpha) |
 | 1 | Consumer-defined channel registry (`ChannelDef`), 10-rung verbosity scale, env/CLI resolution, `EmitterProtocol` injection, API-stability canary | Done (0.2.0) |
-| 1b | Repository setup: CI + release workflows, roadmap, platform support, repokit tooling — first PyPI publication | Done (0.3.0) |
+| 1b | Repository setup: CI + release workflows, roadmap, platform support, repokit tooling — first PyPI publication | Done (0.3.0, 0.3.1) |
+| 1c | Parity with `dazzle-filekit` (the house gold standard): Read the Docs (`.readthedocs.yaml`, `docs/conf.py`, `docs/index.md`, api-reference + recipes pages), `BREAKING_CHANGES.md`, ghtraf traffic tracking + Installs badge | Planned |
 | 2 | First consumer adoption: diagnostic verbosity in Claude-Session-Backup ([csb#87](https://github.com/DazzleML/Claude-Session-Backup/issues/87)) | In progress |
 | 3 | De-vendoring wave: the bundled `log_lib` copies retire onto this dependency ([dazzlecmd#118](https://github.com/DazzleTools/dazzlecmd/issues/118)) | Planned |
 | 4 | Sibling `dazzle-helplib` ships; the reserved `dazzle-clilib` composes both | Planned |

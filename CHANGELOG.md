@@ -2,6 +2,14 @@
 
 All notable changes to dazzle-loglib are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project adheres to [PEP 440](https://peps.python.org/pep-0440/) versioning.
 
+## [0.3.2] - 2026-08-08
+
+### Changed
+- README rewritten on the house library pattern (badge row, tagline placing the library in the stack, "what this owns and what it doesn't", model, status, usage, installation, documentation, contributing, license, related projects) so it presents like its `dazzle-linklib` / `dazzle-filekit` siblings.
+- README license section carries the copyright attribution in the house form (`dazzle-loglib, Copyright (C) 2026 Dustin Darcy`).
+- Contributing section brought to the house shape: dev-environment setup, the two standing rules this library lives by (dependencies point down only; the public surface is locked by the canary), and the project support link.
+- `ROADMAP.md` records phase 1c: the remaining structural gap to `dazzle-filekit` (Read the Docs, `BREAKING_CHANGES.md`, ghtraf traffic tracking).
+
 ## [0.3.1] - 2026-08-08
 
 ### Added
