@@ -2,6 +2,15 @@
 
 All notable changes to dazzle-loglib are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project adheres to [PEP 440](https://peps.python.org/pep-0440/) versioning.
 
+## [0.3.1] - 2026-08-08
+
+### Added
+- repokit-common tooling as a subtree at **`scripts/repokit-common/`**, with the standard git hooks installed. The nested path keeps `scripts/` free for project-specific scripts instead of interleaving them with vendored tooling; repokit's own hooks already prefer this layout and fall back to a flat `scripts/` only for legacy repos.
+- `[tool.repokit-common]` configuration so the shared version tooling resolves this project's version source.
+
+### Changed
+- `_version.py` adopts the full repokit shape (`MAJOR`/`MINOR`/`PATCH`/`PHASE`/`PROJECT_PHASE` plus derived constants). The git hooks stamp build metadata into `__version__`, which is deliberately **not** PEP 440 valid — packaging now reads `PIP_VERSION` instead, so a stamped working copy still builds a valid wheel.
+
 ## [0.3.0] - 2026-08-08
 
 First published release (PyPI). Repository infrastructure — the library API is unchanged from 0.2.0.
@@ -10,7 +19,6 @@ First published release (PyPI). Repository infrastructure — the library API is
 - GitHub project setup: CI workflow (Python 3.10–3.13), PyPI release workflow keyed off the *release published* event (never tag push, so publishing follows the release notes and a re-pushed tag cannot double-fire), issue/PR templates, CODEOWNERS, dependabot, stale-bot, and funding metadata.
 - `ROADMAP.md` and `docs/platform-support.md`.
 - `[dev]` optional-dependency extra (pytest) so CI's editable install resolves.
-- repokit-common tooling as a `scripts/` subtree, with the standard git hooks.
 
 ## [0.2.0] - 2026-08-08
 

@@ -42,8 +42,17 @@ Repository = "https://github.com/DazzleLib/dazzle-loglib"
 Issues = "https://github.com/DazzleLib/dazzle-loglib/issues"
 Changelog = "https://github.com/DazzleLib/dazzle-loglib/blob/main/CHANGELOG.md"
 
+[tool.repokit-common]
+version-source = "dazzle_loglib/_version.py"
+changelog = "CHANGELOG.md"
+repo-url = "https://github.com/DazzleLib/dazzle-loglib"
+tag-prefix = "v"
+private-patterns = ["private/", "local/", ".env"]
+
 [tool.setuptools.dynamic]
-version = {attr = "dazzle_loglib._version.__version__"}
+# PIP_VERSION, not __version__: the git hooks stamp build metadata into
+# __version__ (e.g. 0.3.1_main_5-20260808-7d28812a), which is not PEP 440 valid.
+version = {attr = "dazzle_loglib._version.PIP_VERSION"}
 
 [tool.setuptools.packages.find]
 include = ["dazzle_loglib*"]
