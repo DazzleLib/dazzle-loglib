@@ -14,17 +14,20 @@ down-only dependency the future `dazzle_loglib` will declare). See `_VENDORED.md
 from dazzle_lib.continuum import Continuum
 
 from .levels import (
-    NOTHING, ERROR, WARNING, MINIMAL, DEFAULT, TIMING, CONFIG, DEBUG)
+    NOTHING, ERROR, WARNING, MINIMAL, DEFAULT, EXTRA, DIAGNOSTICS, CONFIG,
+    LITE_DEBUG, DEBUG)
 
-# The verbosity Continuum: 4 quiet rungs, the invariant 0 (DEFAULT), 3 verbose
-# rungs. The int constants ARE the signed ranks -- `rank(level) <= rank(threshold)`
-# (Continuum.passes) is the THAC0 gate, byte-for-byte the historical `level <=
-# threshold`. The asymmetry (4 cold : 3 warm) is intentional (continuum.py docstring).
+# The verbosity Continuum: 4 quiet rungs, the invariant 0 (DEFAULT), 5 verbose
+# rungs — the 10-rung SD-FQCN-4 scale (re-runged 0.2.0). The int constants ARE
+# the signed ranks -- `rank(level) <= rank(threshold)` (Continuum.passes) is the
+# THAC0 gate, byte-for-byte the historical `level <= threshold`. The asymmetry
+# (4 cold : 5 warm) is intentional: quiet compresses, verbose differentiates.
 VERBOSITY_CONTINUUM = Continuum(
     name="verbosity",
     ranks={
         "nothing": NOTHING, "error": ERROR, "warning": WARNING, "minimal": MINIMAL,
-        "default": DEFAULT, "timing": TIMING, "config": CONFIG, "debug": DEBUG,
+        "default": DEFAULT, "extra": EXTRA, "diagnostics": DIAGNOSTICS,
+        "config": CONFIG, "lite-debug": LITE_DEBUG, "debug": DEBUG,
     },
     invariant="default output",
 )

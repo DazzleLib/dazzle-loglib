@@ -1,21 +1,28 @@
 """
 Function tracing decorator.
 
-Routes trace output through the OutputManager singleton at level 3
-on the 'trace' channel, rather than using its own global verbosity.
+Routes trace output through the OutputManager singleton at the full-debug
+rung (DEBUG=5) on the 'trace' channel, rather than using its own global
+verbosity. (Pre-0.2.0 this was rung 3 — the re-runged scale moved full
+debug to 5.)
 """
 
 import functools
 import inspect
 from pathlib import Path
 
+from .levels import DEBUG
+
 
 def trace(func):
     """Decorator to trace function calls via the OutputManager.
 
-    Shows function entry/exit with arguments and return values
-    when the 'trace' channel is active (verbosity >= 3 or
-    --show trace enables it).
+    Shows function entry/exit with arguments and return values when the
+    'trace' CHANNEL's threshold reaches full debug (DEBUG=5). Note the
+    channel starts opt-in-COLD on the legacy path, so a global ``-vvvvv``
+    alone does not activate it — raise the channel explicitly with a spec
+    (``--show trace:debug``), or declare a hot ``ChannelDef('trace')``
+    (follows global verbosity) and run at ``-vvvvv``.
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -25,7 +32,7 @@ def trace(func):
         out = get_output()
         threshold = out.channel_overrides.get('trace', out.verbosity)
 
-        if threshold >= 3:
+        if threshold >= DEBUG:
             # Get function signature info
             module = inspect.getmodule(func)
             module_name = module.__name__ if module else "unknown"
@@ -67,7 +74,7 @@ def trace(func):
             args_str = ', '.join(args_repr)
 
             # Print entry
-            out.emit(3, "[TRACE] >> {mod}.{fn}({args})",
+            out.emit(DEBUG, "[TRACE] >> {mod}.{fn}({args})",
                      channel='trace', mod=module_name, fn=func_name, args=args_str)
 
             try:
@@ -81,13 +88,13 @@ def trace(func):
                         result_repr = f"'{result[:47]}...'"
                     else:
                         result_repr = repr(result)
-                    out.emit(3, "[TRACE] << {mod}.{fn} returned: {val}",
+                    out.emit(DEBUG, "[TRACE] << {mod}.{fn} returned: {val}",
                              channel='trace', mod=module_name, fn=func_name, val=result_repr)
 
                 return result
 
             except Exception as e:
-                out.emit(3, "[TRACE] !! {mod}.{fn} raised: {exc}: {msg}",
+                out.emit(DEBUG, "[TRACE] !! {mod}.{fn} raised: {exc}: {msg}",
                          channel='trace', mod=module_name, fn=func_name,
                          exc=type(e).__name__, msg=str(e))
                 raise
