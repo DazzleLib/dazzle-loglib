@@ -1,0 +1,14 @@
+{
+  "repokit_managed": true,
+  "generated_by": "repokit",
+  "version": "0.4.3",
+  "project_name": "dazzle-loglib",
+  "language": "python",
+  "branch_strategy": "minimal",
+  "private_branch": "private",
+  "description": "Channel/verbosity-aware CLI output management on dazzle-lib continua",
+  "author": {
+    "name": "djdarcy",
+    "email": "djdarcy@users.noreply.github.com"
+  }
+}

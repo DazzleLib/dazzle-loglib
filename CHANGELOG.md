@@ -2,9 +2,19 @@
 
 All notable changes to dazzle-loglib are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project adheres to [PEP 440](https://peps.python.org/pep-0440/) versioning.
 
+## [0.3.0] - 2026-08-08
+
+First published release (PyPI). Repository infrastructure — the library API is unchanged from 0.2.0.
+
+### Added
+- GitHub project setup: CI workflow (Python 3.10–3.13), PyPI release workflow keyed off the *release published* event (never tag push, so publishing follows the release notes and a re-pushed tag cannot double-fire), issue/PR templates, CODEOWNERS, dependabot, stale-bot, and funding metadata.
+- `ROADMAP.md` and `docs/platform-support.md`.
+- `[dev]` optional-dependency extra (pytest) so CI's editable install resolves.
+- repokit-common tooling as a `scripts/` subtree, with the standard git hooks.
+
 ## [0.2.0] - 2026-08-08
 
-First published release (PyPI). Generalizes the extracted library from its donor-project shape into a consumer-defined system.
+The API generalization: turns the extracted library from its donor-project shape into a consumer-defined system. Committed but never published to PyPI — 0.3.0 is the first release on the index.
 
 ### Added
 - `ChannelDef` and the consumer-declared channel registry: `init_output(channel_defs=[...])` gives each application its own channel set (names, descriptions, opt-in cold start, per-channel FD defaults) without touching module state. When `channel_defs` is passed, the legacy module-level sets contribute nothing.
