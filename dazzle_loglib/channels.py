@@ -23,8 +23,12 @@ Channel spec syntax (compact, positional):
         timing              # All defaults (level=0 — pins the channel at `default`)
         timing:2            # Level 2
         timing:config       # Named rung (resolved via the verbosity Continuum)
-        timing::file:perf.log   # Default level, file dest
-        timing::stdout::json    # Default level, stdout, json
+
+    The DEST, LOCATION, and FORMAT slots are RESERVED: the parser accepts
+    and stores them on ``ChannelSpec``, but nothing routes on them yet —
+    ``timing::file:perf.log`` parses cleanly and behaves exactly like
+    ``timing``. Their semantics are a charter question under active design
+    (the "larger berth" arc); until it lands, only CHANNEL and LEVEL act.
 
 Dotted channel names (``liveness.verify``) are ALLOWED and uninterpreted —
 hierarchy semantics are deferred to the FQCN arc (reference design: SD-FQCN-2's

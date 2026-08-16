@@ -15,7 +15,7 @@ from dazzle_lib.continuum import Continuum
 
 from .levels import (
     NOTHING, ERROR, WARNING, MINIMAL, DEFAULT, EXTRA, DIAGNOSTICS, CONFIG,
-    LITE_DEBUG, DEBUG)
+    LITE_DEBUG, DEBUG, RUNG_GLOSSES)
 
 # The verbosity Continuum: 4 quiet rungs, the invariant 0 (DEFAULT), 5 verbose
 # rungs — the 10-rung SD-FQCN-4 scale (re-runged 0.2.0). The int constants ARE
@@ -46,6 +46,30 @@ def shows(level: int, threshold: int) -> bool:
 
 
 def rank_of(name: str) -> int:
-    """The signed rank of a named rung (``rank_of('config') == 2``) -- the
-    name->rank lookup channel specs will use (`--show timing:config`, DWP-B/B-2)."""
+    """The signed rank of a named rung (``rank_of('config') == 3``) -- the
+    name->rank lookup channel specs use (`--show timing:config`)."""
     return VERBOSITY_CONTINUUM.rank(name)
+
+
+def verbosity_rungs():
+    """The full scale as DATA: ``(name, rank, gloss)`` per rung, cold -> warm.
+
+    The rung names and ranks are locked API and the glosses are library-owned,
+    so this is the canonical source for any surface that explains the verbosity
+    model to a user -- a ``--help`` table, a ``verbosity`` sub-command, a docs
+    page. Rendering (banding, width, color, whether the flag is spelled ``-vv``
+    or ``--verbosity 2``) is deliberately NOT decided here: that belongs to the
+    consumer, or to a future CLI library. This function only supplies the truth
+    it would otherwise have to hand-copy.
+
+    Example -- the smallest useful help table::
+
+        for name, rank, gloss in verbosity_rungs():
+            print(f"  {rank:+d}  {name:<12} {gloss}")
+
+    Returns:
+        A list of ``(name, rank, gloss)`` tuples ordered coldest to warmest
+        (``nothing`` at -4 through ``debug`` at +5).
+    """
+    return [(name, VERBOSITY_CONTINUUM.rank(name), RUNG_GLOSSES[name])
+            for name in VERBOSITY_CONTINUUM.levels()]   # levels() is cold->warm

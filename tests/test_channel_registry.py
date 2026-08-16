@@ -150,6 +150,25 @@ class TestFdSentinels:
         out, err = self._capture(monkeypatch, om, file='stdout')
         assert out == "msg\n" and err == ""
 
+    def test_default_destination_is_LAZY_not_bound_at_construction(self):
+        """R1-F5, completed: the DEFAULT destination must resolve at emit time
+        too, not capture sys.stderr during __init__.
+
+        Binding the object at construction silently breaks the two cases the
+        sentinel design exists for: pythonw hosts that rebind streams after
+        import, and any caller that constructs a manager before wrapping
+        output (contextlib.redirect_stderr, pytest's capsys, a test harness).
+        Found by executing the documented CLI recipe, which captured nothing.
+        """
+        import contextlib
+        import io
+        om = OutputManager(verbosity=1)          # constructed FIRST...
+        sink = io.StringIO()
+        with contextlib.redirect_stderr(sink):   # ...redirected AFTER
+            om.emit(1, "captured")
+        assert sink.getvalue() == "captured\n"
+        assert om.file == 'stderr'               # the sentinel, not the stream
+
 
 class TestReinit:
     def test_init_output_replaces_singleton(self):
@@ -240,3 +259,32 @@ class TestDriveLetterSpec:
         assert spec.name == "timing"
         assert spec.destination == "file"
         assert spec.location == r"C:\logs\out.log"
+
+
+class TestDocumentedRecipeRoundTrip:
+    """F1 regression (berth consultation Rnd1, 2026-08-14): the canonical
+    docs/cli-integration.md recipe serialized --show specs with str(s) --
+    the dataclass repr, which does not round-trip through parse. The one-off
+    verifier used a different, working form, masking the broken doc. These
+    pin (a) the documented form's round-trip and (b) doc/verifier agreement."""
+
+    def test_name_level_form_round_trips(self):
+        s = parse_channel_spec("timing:2")
+        rt = parse_channel_spec(f"{s.name}:{s.level}")
+        assert (rt.name, rt.level) == (s.name, s.level) == ("timing", 2)
+
+    def test_doc_and_verifier_agree_on_the_serialization(self):
+        """Doc-drift canary: the recipe text in docs/cli-integration.md and
+        tests/one-offs/check_cli_integration_recipe.py must both use the
+        name:level serialization, and the doc must never regress to str(s)."""
+        import pathlib
+        root = pathlib.Path(__file__).resolve().parent.parent
+        doc = (root / "docs" / "cli-integration.md").read_text(encoding="utf-8")
+        oneoff = (root / "tests" / "one-offs" /
+                  "check_cli_integration_recipe.py").read_text(encoding="utf-8")
+        form = '[f"{s.name}:{s.level}" for s in args.show]'
+        assert form in doc, "doc recipe lost the round-trippable serialization"
+        assert form in oneoff, "one-off verifier diverged from the documented recipe"
+        assert "[str(s) for s in args.show]" not in doc, (
+            "doc regressed to str(s) -- the dataclass repr does not round-trip"
+        )

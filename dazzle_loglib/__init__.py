@@ -21,6 +21,9 @@ Each program declares its OWN channels::
                 ])
 
 Public API:
+    VERBOSITY_CONTINUUM — the 10-rung signed axis (locked: names + ranks)
+    shows / rank_of  — the emit gate and the name->rank lookup
+    verbosity_rungs  — the scale as data: (name, rank, gloss) cold->warm
     OutputManager    — central coordinator
     init_output      — singleton initialization
     get_output       — access singleton
@@ -40,6 +43,13 @@ channels.ChannelConfig.
 """
 
 from ._version import __version__, DISPLAY_VERSION
+from .levels import (
+    NOTHING, ERROR, WARNING, MINIMAL, DEFAULT, EXTRA, DIAGNOSTICS, CONFIG,
+    LITE_DEBUG, DEBUG,
+)
+from .verbosity import (
+    VERBOSITY_CONTINUUM, SILENCE_FLOOR, shows, rank_of, verbosity_rungs,
+)
 from .manager import OutputManager, init_output, get_output, BUILTIN_CHANNELS
 from .hints import (
     Hint, register_hint, register_hints, get_hint, get_hints_by_category,
@@ -54,6 +64,11 @@ from .resolve import resolve_verbosity, resolve_channel_specs
 
 __all__ = [
     '__version__', 'DISPLAY_VERSION',
+    # The verbosity scale (locked API: rung names, ranks, and the gate rule)
+    'VERBOSITY_CONTINUUM', 'SILENCE_FLOOR', 'shows', 'rank_of',
+    'verbosity_rungs',
+    'NOTHING', 'ERROR', 'WARNING', 'MINIMAL', 'DEFAULT',
+    'EXTRA', 'DIAGNOSTICS', 'CONFIG', 'LITE_DEBUG', 'DEBUG',
     'OutputManager', 'init_output', 'get_output', 'BUILTIN_CHANNELS',
     'ChannelDef', 'ChannelSpec', 'parse_channel_spec', 'OPT_IN_START_RANK',
     'resolve_verbosity', 'resolve_channel_specs',

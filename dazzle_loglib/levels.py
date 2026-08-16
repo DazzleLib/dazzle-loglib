@@ -38,3 +38,29 @@ NOTHING = -4       # Hard wall — exit code only (CI/headless)
 
 # Deprecated alias — pre-0.2.0 name for rank 1 (the rung is now "extra").
 TIMING = EXTRA
+
+
+# One-line gloss per rung, keyed by the CONTINUUM's rung name (not the constant
+# name). These are library-owned: the rung names and ranks are locked API, so
+# only this library can canonically say what each one means -- consumers that
+# explain the scale to users (a `--help` table, a `verbosity` sub-command)
+# should render these rather than re-author ten strings apiece.
+#
+# ASCII only, deliberately: this text is printed to terminals, including
+# Windows codepage 437/1252 consoles.
+# Voice: every gloss answers "what do I GET at this level?", not "what is
+# suppressed" -- the question a user reads the table to answer. (The negative
+# rungs were originally phrased as suppression, which read backwards once the
+# rungs were rendered together.)
+RUNG_GLOSSES = {
+    "nothing":    "Nothing at all -- exit code only (CI/headless)",
+    "error":      "Errors only",
+    "warning":    "Errors and warnings",
+    "minimal":    "Results only -- no hints",
+    "default":    "Default output, result-context hints",
+    "extra":      "Progress, timing, summary info",
+    "diagnostics": "Diagnostic detail (decision inputs, guard math)",
+    "config":     "Configuration, algorithm selection",
+    "lite-debug": "Light debug detail",
+    "debug":      "Full debug -- internal state, evaluation/call tracing",
+}

@@ -2,6 +2,23 @@
 
 All notable changes to dazzle-loglib are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project adheres to [PEP 440](https://peps.python.org/pep-0440/) versioning.
 
+## [0.3.3] - 2026-08-08
+
+Closes the gap between what `docs/api-stability.md` promises and what the package root actually exposes, before the first PyPI publication makes the surface permanent.
+
+### Added
+- The verbosity scale is now importable from the package root, not only from submodules: `VERBOSITY_CONTINUUM`, `SILENCE_FLOOR`, `shows`, `rank_of`, and the ten level constants. The stability document already described the scale as part of the tracked surface; the root did not export it, so the document pointed at symbols the documented surface did not provide.
+- `verbosity_rungs()` — the scale as data: `(name, rank, gloss)` per rung, cold to warm. The rung names and ranks are library-owned, so the one-line glosses are too; any surface that explains the verbosity model to a user (a `--help` table, a `verbosity` sub-command) renders these instead of re-authoring ten strings. Glosses are ASCII, since they are printed to terminals including Windows codepage 437/1252.
+- `tests/test_import_stability.py::TestCharterWalls` asserts the package never *imports* `argparse` (checked via the AST, so prose about argparse remains fine). Parser construction belongs to the consuming application or a CLI library; this makes that boundary executable rather than merely documented.
+- `docs/cli-integration.md` — the canonical CLI wiring recipe: flag declarations (counts for `-v`/`-q`, `type=parse_channel_spec` on `--show` so argparse renders a clean error), resolution with the env-var path for hook and scheduler contexts, a `--help` rung table built from `verbosity_rungs()`, keeping `--json` stdout pure, and the single `add_verbosity_flags()` helper each consumer should own so the flags are declared once rather than per-parser. Exercised end-to-end by `tests/one-offs/check_cli_integration_recipe.py`.
+
+### Changed
+- `docs/api-stability.md` reframed from "locked" to **tracked**: the honest claim for a 0.3.x library shipping mid-development of its stack is *no silent drift*, not *no change*. The page now names where movement is still expected (first-consumer adoption, the FQCN channel arc, a future CLI library) instead of implying a stability the project cannot yet promise. This release's own behavior fix — below — is the worked example.
+
+### Fixed
+- The manager's default output destination is now the `'stderr'` sentinel rather than `sys.stderr` captured during `__init__`. Binding the stream at construction defeated the emit-time resolution guarantee in the most common case: a `pythonw` host that rebound its streams after import, or a test harness wrapping output with `contextlib.redirect_stderr`/`capsys`, would silently keep writing to the original stream. Found by executing the documented CLI recipe, which captured nothing; pinned by a regression test.
+- The CLI recipe's `--show` serialization: the doc used `str(s)`, which is the dataclass repr and does not round-trip — the override landed under a garbage channel name that nothing ever emits on, so every `--show` flag was silently inert (spec names are not validated at init, even under `strict_channels=True`, whose check runs at emit time against the emitted name). The recipe now serializes as `name:level` (matching what the one-off verifier had always exercised — that divergence is what masked the bug), the reserved spec slots (`DEST:LOCATION:FORMAT`) are documented as inert until routing lands, and two regression tests pin the round-trip and doc/verifier agreement.
+
 ## [0.3.2] - 2026-08-08
 
 ### Changed

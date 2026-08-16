@@ -85,7 +85,11 @@ class OutputManager:
         # May hold a real TextIO or a 'stdout'/'stderr' sentinel string —
         # sentinels are resolved at emit time in ALL positions (R1-F5), so
         # hosts that rebind streams after construction (pythonw) still work.
-        self.file = file if file is not None else sys.stderr
+        # The DEFAULT is the 'stderr' SENTINEL, not sys.stderr captured now:
+        # binding the object here would defeat the guarantee in the most
+        # common case, breaking pythonw rebinds and contextlib.redirect_stderr
+        # for anyone who constructed the manager first.
+        self.file = file if file is not None else 'stderr'
         self.channel_fds: Dict[str, Union[TextIO, str]] = {}
         self._shown_hints: Set[str] = set()
 

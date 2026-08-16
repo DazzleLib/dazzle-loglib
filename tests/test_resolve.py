@@ -43,6 +43,24 @@ class TestResolveVerbosityPrecedence:
         monkeypatch.setenv("X_VERBOSITY", "error")
         assert resolve_verbosity(env_var="X_VERBOSITY") == -3
 
+    def test_explicit_zero_still_wins_outright(self, monkeypatch):
+        """Mutation-sweep find (fresh-context M1): `--verbosity 0` is a real
+        input, and explicit=0 must beat counts and env exactly like any other
+        explicit value. A truthiness refactor (`if explicit:`) passed the
+        entire prior suite; this pins the is-not-None semantics."""
+        assert resolve_verbosity(2, 0, explicit=0) == 0
+        monkeypatch.setenv("X_VERBOSITY", "3")
+        assert resolve_verbosity(explicit=0, env_var="X_VERBOSITY") == 0
+
+    def test_env_named_rung_is_case_insensitive(self, monkeypatch):
+        """Mutation-sweep find (fresh-context M6): env values are user-typed,
+        so `Debug`/`DIAGNOSTICS` must resolve — the .lower() is deliberate
+        behavior, previously untested."""
+        monkeypatch.setenv("X_VERBOSITY", "Debug")
+        assert resolve_verbosity(env_var="X_VERBOSITY") == 5
+        monkeypatch.setenv("X_VERBOSITY", "DIAGNOSTICS")
+        assert resolve_verbosity(env_var="X_VERBOSITY") == 2
+
     def test_env_invalid_value_raises_loudly(self, monkeypatch):
         monkeypatch.setenv("X_VERBOSITY", "loudly")
         with pytest.raises(ValueError, match="X_VERBOSITY"):

@@ -1,8 +1,17 @@
 """LH-2 / R1-F9 / R1-F10: the emitter injection contract.
 
-Pins the load-bearing claims: OutputManager satisfies EmitterProtocol
-UNCHANGED (structural), the shims satisfy it, and NullEmitter's inactive
-answer gives guarded call sites true zero cost.
+Pins the three claims the README and docs/cli-integration.md make on this
+protocol's behalf, each of which would fail silently rather than loudly:
+
+- ``OutputManager`` satisfies ``EmitterProtocol`` with no changes of its own.
+  Structural typing means nothing declares the relationship, so if a signature
+  drifted, every consumer passing a real manager into an ``emitter=`` parameter
+  would keep type-checking and only misbehave at runtime.
+- The shims satisfy it too, which is what lets a caller with no interest in
+  this library hand in ``print`` and still work.
+- ``NullEmitter.is_level_active`` answers False, which is what makes a guarded
+  call site skip its data collection entirely instead of computing a message
+  for a destination that discards it.
 """
 from dazzle_loglib.manager import OutputManager
 from dazzle_loglib.protocols import EmitterProtocol, NullEmitter, CallableEmitter

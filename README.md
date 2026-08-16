@@ -31,9 +31,9 @@ pip install dazzle-loglib
 One signed verbosity axis (a `dazzle_lib.Continuum` with an invariant zero):
 
 ```
-<-- quieter --------------- default ------------------------- louder -->
--4    -3     -2       -1      0       1     2           3      4          5
-wall  errors warnings minimal default extra diagnostics config lite-debug debug
+<-- quieter -------------------- default --------------------------- louder -->
+-4       -3       -2       -1       0      1       2       3        4        5
+wall  errors warnings  minimal default extra diagnostics config lite-debug debug
 ```
 
 A message at `level` shows when `level <= threshold`; at `-4` (the hard wall) nothing shows at all. `-v` steps warmer, `-q` steps colder, and they compose (`-vv -q` = 1).
@@ -65,7 +65,7 @@ Each channel can be pinned independently of the global level, so `--show livenes
 
 ## Status
 
-**0.3.x, alpha.** The API is settling alongside its first consumers; the surfaces that are locked (and the ones deliberately excluded) are enumerated in [docs/api-stability.md](docs/api-stability.md) and pinned by an import-stability canary. Breaking changes land in [CHANGELOG.md](CHANGELOG.md) with a version bump, never silently.
+**0.3.x, alpha — and deliberately still flexible.** This library ships mid-development of the wider [DazzleLib stack](https://github.com/DazzleLib/.github/blob/main/docs/STACK-MAP.md): its first real consumer has not landed yet, and adoption is what usually reshapes an API. So the promise here is *no silent drift* rather than *no change* — [docs/api-stability.md](docs/api-stability.md) enumerates the tracked surface (pinned by an import-stability canary), the parts explicitly excluded from any promise, and, honestly, where movement is still expected. Changes land in [CHANGELOG.md](CHANGELOG.md) with a version bump, never quietly.
 
 ## Usage
 
@@ -127,7 +127,8 @@ pip install -e ".[dev]"
 
 ## Documentation
 
-- [docs/api-stability.md](docs/api-stability.md) — what is locked, what is excluded, and the protocol homing promise
+- [docs/api-stability.md](docs/api-stability.md) — the tracked surface, what is excluded, where movement is still expected, and the protocol homing promise
+- [docs/cli-integration.md](docs/cli-integration.md) — the canonical CLI wiring: flags, resolution, help tables, keeping `--json` output pure
 - [CHANGELOG.md](CHANGELOG.md) — release history
 - [ROADMAP.md](ROADMAP.md) — where this is going (tracked live in [#1](https://github.com/DazzleLib/dazzle-loglib/issues/1))
 - [docs/platform-support.md](docs/platform-support.md) — platform and Python support
@@ -155,7 +156,7 @@ bash scripts/repokit-common/install-hooks.sh
 Two house rules this library lives by:
 
 - **Dependencies point down only.** The perpendicular tier consumes the bedrock and nothing else — never a consumer, never a sibling. `dazzle-loglib` and `dazzle-helplib` do not import each other.
-- **The public surface is locked.** The symbols and behaviors listed in [docs/api-stability.md](docs/api-stability.md) are pinned by `tests/test_import_stability.py`; changes follow the documented version discipline rather than landing silently.
+- **The public surface changes loudly or not at all.** The symbols and behaviors listed in [docs/api-stability.md](docs/api-stability.md) are pinned by `tests/test_import_stability.py`, so drift fails a test rather than reaching a consumer. While the stack is mid-development the surface is still expected to move; the discipline is that it moves deliberately, versioned, and documented.
 
 Like the project?
 

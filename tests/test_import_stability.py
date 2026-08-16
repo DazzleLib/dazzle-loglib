@@ -1,9 +1,15 @@
-"""API-stability canary (STACK-MAP review F9: every new lib ships this at
-first release). If any of these fail, a locked public symbol moved or changed
-shape — that is a BREAKING change requiring a deliberate version decision,
-docs/api-stability.md update, and consumer notice. See docs/api-stability.md
-for what is and is NOT covered (the legacy donor surface is explicitly
-excluded from the guarantee).
+"""API canary (STACK-MAP review F9: every new lib ships this at first release).
+
+These pin the TRACKED surface described in docs/api-stability.md. A failure
+here does not mean "you did something forbidden" — the library is 0.3.x alpha
+and shipped mid-development of the wider stack, so the surface is still
+expected to move. It means the change must be DELIBERATE: update this file,
+say so in CHANGELOG.md with a version bump, and tell any known consumer.
+The point is that drift fails a test instead of reaching someone quietly.
+
+("Locked" in the class names below is the older word for the same idea; see
+docs/api-stability.md for what is tracked, what is excluded, and where
+movement is still expected.)
 """
 import dataclasses
 
@@ -21,6 +27,17 @@ class TestLockedImports:
             Hint, register_hint, register_hints, get_hint,
             get_hints_by_category,
             trace,
+        )
+
+    def test_the_locked_scale_is_reachable_from_the_ROOT(self):
+        """AC-CL-1: api-stability.md locks the scale, so the root must expose
+        it -- a contract pointing at symbols only reachable via submodules is
+        a contract that lies."""
+        from dazzle_loglib import (                              # noqa: F401
+            VERBOSITY_CONTINUUM, SILENCE_FLOOR, shows, rank_of,
+            verbosity_rungs,
+            NOTHING, ERROR, WARNING, MINIMAL, DEFAULT,
+            EXTRA, DIAGNOSTICS, CONFIG, LITE_DEBUG, DEBUG,
         )
 
     def test_protocols_module_permanent_reexport_home(self):
@@ -52,6 +69,54 @@ class TestLockedScale:
         from dazzle_loglib.verbosity import shows
         assert shows(0, 0) and not shows(1, 0)
         assert shows(-3, -3) and not shows(-3, -4)   # the hard wall
+
+    def test_verbosity_rungs_shape(self):
+        """AC-CL-2: the scale as data -- 10 rungs, cold->warm, every one glossed."""
+        from dazzle_loglib import verbosity_rungs, VERBOSITY_CONTINUUM
+        rungs = verbosity_rungs()
+        assert len(rungs) == 10
+        names = [n for n, _, _ in rungs]
+        ranks = [r for _, r, _ in rungs]
+        assert names[0] == "nothing" and names[-1] == "debug"
+        assert ranks == sorted(ranks) == list(range(-4, 6))   # cold -> warm
+        assert all(isinstance(g, str) and g.strip() for _, _, g in rungs)
+        # names/ranks agree with the continuum they claim to describe
+        assert all(VERBOSITY_CONTINUUM.rank(n) == r for n, r, _ in rungs)
+
+    def test_rung_glosses_are_ascii(self):
+        """Glosses are printed to terminals, including Windows cp437/1252."""
+        from dazzle_loglib import verbosity_rungs
+        for name, _, gloss in verbosity_rungs():
+            gloss.encode("ascii")            # raises if a smart dash sneaks in
+
+
+class TestCharterWalls:
+    def test_the_package_never_IMPORTS_argparse(self):
+        """AC-CL-3: argparse construction belongs to a CLI library, never here.
+        The boundary is a design decision (DWP-A / STACK-MAP D12); this makes
+        it executable so it cannot erode by accident.
+
+        Checks real import statements via the AST -- prose *about* argparse is
+        fine and expected (``parse_channel_spec`` documents that it raises
+        ``ValueError`` precisely so argparse can render a clean error).
+        """
+        import ast
+        import pathlib
+        import dazzle_loglib
+        pkg = pathlib.Path(dazzle_loglib.__file__).parent
+        offenders = []
+        for path in sorted(pkg.glob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    if any(a.name.split(".")[0] == "argparse" for a in node.names):
+                        offenders.append(f"{path.name}:{node.lineno}")
+                elif isinstance(node, ast.ImportFrom):
+                    if (node.module or "").split(".")[0] == "argparse":
+                        offenders.append(f"{path.name}:{node.lineno}")
+        assert not offenders, (
+            f"argparse imported at {offenders} -- parser construction is the "
+            f"CLI layer's charter, not this library's")
 
 
 class TestLockedShapes:
