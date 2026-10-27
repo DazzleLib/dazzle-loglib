@@ -26,7 +26,8 @@ def add_verbosity_flags(parser: argparse.ArgumentParser) -> None:
 
     Call it from every parser that needs them -- the main parser, and any
     pre-parse or sugar parser. Declaring them per-parser instead is how a
-    project ends up with three copies that drift.
+    project ends up with three copies that drift. (With sub-commands, the
+    main parser's copies need their own dests: see "Sub-commands" below.)
     """
     parser.add_argument("-v", "--verbose", action="count", default=0,
                         help="Increase detail (repeatable: -v .. -vvvvv)")
@@ -71,6 +72,56 @@ def main(argv=None):
 ### Non-interactive contexts
 
 Hooks, schedulers, and CI have no command line to add flags to. The environment variables above are the whole mechanism — `MYAPP_VERBOSITY=diagnostics` or `MYAPP_SHOW=scan:debug,git:2` turns detail up without editing a script. The library never reads the environment implicitly; you name the variables, so they can match your project's existing conventions.
+
+## Sub-commands: one chain, on both sides of the command
+
+In a CLI with sub-commands, users type the flags on either side of the command: `myapp -v run`, `myapp run -v`, and `myapp -v run -v` (meaning `-vv`). All three should work and feed the same verbosity, so the flags are declared on the main parser **and** on every sub-parser.
+
+**The pitfall: the same `dest` on both parsers.** argparse applies a sub-parser's defaults after the main parser has stored its values, so the sub-parser's `verbose=0` silently overwrites the main parser's count. `myapp -v run` resolves to verbosity 0, with no error:
+
+```python
+parser = argparse.ArgumentParser(prog="myapp")
+add_verbosity_flags(parser)                 # dest "verbose"
+sub = parser.add_subparsers(dest="cmd", required=True)
+add_verbosity_flags(sub.add_parser("run"))  # dest "verbose" again
+parser.parse_args(["-v", "run"]).verbose    # 0, not 1: the -v is lost
+```
+
+**The recipe: give the main parser's copies their own dests, and add the counts.**
+
+```python
+def add_verbosity_flags(parser: argparse.ArgumentParser, top: bool = False) -> None:
+    p = "top_" if top else ""
+    parser.add_argument("-v", "--verbose", action="count", default=0, dest=p + "verbose",
+                        help="Increase detail (repeatable: -v .. -vvvvv)")
+    parser.add_argument("-q", "--quiet", action="count", default=0, dest=p + "quiet",
+                        help="Decrease detail (repeatable: -q .. -qqqq)")
+    parser.add_argument("--show", action="append", metavar="CHANNEL[:LEVEL]",
+                        type=parse_channel_spec, default=[], dest=p + "show",
+                        help="Raise one channel independently, e.g. --show scan:debug")
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="myapp")
+    add_verbosity_flags(parser, top=True)
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    add_verbosity_flags(sub.add_parser("run"))
+    args = parser.parse_args(argv)
+    shows = args.top_show + args.show
+    init_output(
+        verbosity=resolve_verbosity(args.top_verbose + args.verbose,
+                                    args.top_quiet + args.quiet,
+                                    env_var="MYAPP_VERBOSITY"),
+        channels=resolve_channel_specs([f"{s.name}:{s.level}" for s in shows],
+                                       env_var="MYAPP_SHOW"),
+        channel_defs=MYAPP_CHANNELS,
+        strict_channels=True,
+    )
+```
+
+It is still one function, so the flags are still declared in one place. `tests/test_cli_integration_doc.py` runs this recipe, taken from this page, on all the forms above.
+
+**The other legitimate pattern: a sub-command with its own verbosity.** A sub-command that wants levels or channels separate from the main ones (a sub-tool with its own scale) keeps distinct dests and simply does not add them. Nothing in the library changes for this: `resolve_verbosity` takes counts and does not care where they came from.
 
 ## Explaining the scale to users
 

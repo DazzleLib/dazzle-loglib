@@ -2,6 +2,14 @@
 
 All notable changes to dazzle-loglib are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project adheres to [PEP 440](https://peps.python.org/pep-0440/) versioning.
 
+## [0.3.4] - 2026-10-26
+
+Documentation only; no change to the package.
+
+### Added
+- `docs/cli-integration.md` gains a "Sub-commands" section: the flags are declared on the main parser and on every sub-parser, so `myapp -v run`, `myapp run -v` and `myapp -v run -v` (meaning `-vv`) all feed one verbosity. It names the pitfall that recipe avoids: with the same `dest` on both parsers, argparse lets the sub-parser's default (0) overwrite the main parser's count, so a `-v` typed before the sub-command is silently lost. The fix is to give the main parser's copies their own dests and add the counts. The section also notes the other legitimate pattern, a sub-command with its own separate verbosity. Found while adopting the library in ck3-save-migrator, which uses this recipe.
+- `tests/test_cli_integration_doc.py` runs that section's code blocks straight from the page: the pitfall block must lose the flag as the page says, and the recipe must give one verbosity, and join `--show` specs, on both sides of the sub-command.
+
 ## [0.3.3] - 2026-08-08
 
 Closes the gap between what `docs/api-stability.md` promises and what the package root actually exposes, before the first PyPI publication makes the surface permanent.
